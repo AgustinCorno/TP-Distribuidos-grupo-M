@@ -8,27 +8,22 @@ option java_package = "com.unla.tp_distribuidos.grpc.reserva";
 
 service ReservaGrpcService {
 
-  // Crear una reserva nueva.
   rpc CrearReserva (CrearReservaRequest) returns (ReservaResponse);
 
-  // Consultar reservas (listado completo).
-  rpc ObtenerReservas (ObtenerReservasRequest) returns (ReservasResponse);
+  rpc ConsultarReservas (ConsultarReservasRequest) returns (ReservasResponse);
 
-  // Consultar una reserva específica.
-  rpc ObtenerReservaPorId (ReservaIdRequest) returns (ReservaResponse);
-
-  // Cancelar una reserva existente.
   rpc CancelarReserva (ReservaIdRequest) returns (ReservaResponse);
 
-  // Consultar el historial de reservas de un cliente.
-  rpc ObtenerHistorialPorCliente (ClienteIdRequest) returns (ReservasResponse);
+  rpc ConsultarHistorial (ClienteIdRequest) returns (ReservasResponse);
+
 }
 
 message CrearReservaRequest {
   int64 clienteId = 1;
   int64 vehiculoId = 2;
-  string fechaDesde = 3; // formato ISO-8601, ej: "2026-01-15"
-  string fechaHasta = 4;
+  string fechaHoraInicio = 3; // ISO-8601, ej: "2026-01-15T10:00:00"
+  string fechaHoraFin = 4;
+  double precioDiario = 5;
 }
 
 message ReservaIdRequest {
@@ -39,17 +34,25 @@ message ClienteIdRequest {
   int64 clienteId = 1;
 }
 
-message ObtenerReservasRequest {
-  // Sin filtros por ahora.
+message ConsultarReservasRequest {
+  int64 clienteId = 1;
+  int64 vehiculoId = 2;
+  string tipoVehiculo = 3;
+  string estado = 4;
+  string fechaDesde = 5;
+  string fechaHasta = 6;
+  bool esAdmin = 7;
 }
 
 message ReservaResponse {
   int64 id = 1;
   int64 clienteId = 2;
   int64 vehiculoId = 3;
-  string fechaDesde = 4;
-  string fechaHasta = 5;
-  string estado = 6; // ej: "PENDIENTE", "CONFIRMADA", "CANCELADA", "FINALIZADA"
+  string fechaHoraInicio = 4;
+  string fechaHoraFin = 5;
+  double precioDiario = 6;
+  double importeTotal = 7;
+  string estado = 8; // "CONFIRMADA", "CANCELADA", "FINALIZADA"
 }
 
 message ReservasResponse {
