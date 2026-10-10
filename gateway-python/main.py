@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
 from datetime import datetime
+from strawberry.fastapi import GraphQLRouter
+from graphql_schema import schema
 import grpc
 
 import cliente_client
@@ -171,3 +173,6 @@ def cancelar_reserva(id: int):
         return reserva_client.cancelar(id)
     except grpc.RpcError as e:
         grpc_error_to_http(e)
+
+graphql_app = GraphQLRouter(schema)
+app.include_router(graphql_app, prefix="/graphql")
