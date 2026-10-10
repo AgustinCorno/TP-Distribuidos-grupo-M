@@ -75,43 +75,50 @@ class ClienteGrpcServiceServicer:
     """Missing associated documentation comment in .proto file."""
 
     def CrearCliente(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Alta de cliente.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def ModificarCliente(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Modificación de datos de un cliente existente.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def BajaLogicaCliente(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Baja lógica de un cliente.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def ObtenerClientes(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Consultar clientes (listado completo).
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def ObtenerClientePorId(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Consultar un cliente específico.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def ExisteCliente(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Verificar la existencia de un cliente (ej: antes de crear una reserva).
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def ClienteActivo(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Verificar que un cliente se encuentre activo.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
