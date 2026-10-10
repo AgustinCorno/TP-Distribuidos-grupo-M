@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package com.unla.tp_distribuidos.grpc.reserva;
+
+option java_multiple_files = true;
+option java_package = "com.unla.tp_distribuidos.grpc.reserva";
+
+
+service ReservaGrpcService {
+
+  rpc CrearReserva (CrearReservaRequest) returns (ReservaResponse);
+
+  rpc ConsultarReservas (ConsultarReservasRequest) returns (ReservasResponse);
+
+  rpc CancelarReserva (ReservaIdRequest) returns (ReservaResponse);
+
+  rpc ConsultarHistorial (ClienteIdRequest) returns (ReservasResponse);
+
+}
+
+message CrearReservaRequest {
+  int64 clienteId = 1;
+  int64 vehiculoId = 2;
+  string fechaHoraInicio = 3; // ISO-8601, ej: "2026-01-15T10:00:00"
+  string fechaHoraFin = 4;
+  double precioDiario = 5;
+}
+
+message ReservaIdRequest {
+  int64 id = 1;
+}
+
+message ClienteIdRequest {
+  int64 clienteId = 1;
+}
+
+message ConsultarReservasRequest {
+  int64 clienteId = 1;
+  int64 vehiculoId = 2;
+  string tipoVehiculo = 3;
+  string estado = 4;
+  string fechaDesde = 5;
+  string fechaHasta = 6;
+  bool esAdmin = 7;
+}
+
+message ReservaResponse {
+  int64 id = 1;
+  int64 clienteId = 2;
+  int64 vehiculoId = 3;
+  string fechaHoraInicio = 4;
+  string fechaHoraFin = 5;
+  double precioDiario = 6;
+  double importeTotal = 7;
+  string estado = 8; // "CONFIRMADA", "CANCELADA", "FINALIZADA"
+}
+
+message ReservasResponse {
+  repeated ReservaResponse reservas = 1;
+}

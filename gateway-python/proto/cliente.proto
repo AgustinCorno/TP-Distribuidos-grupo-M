@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package com.unla.tp_distribuidos.grpc.cliente;
+
+option java_multiple_files = true;
+option java_package = "com.unla.tp_distribuidos.grpc.cliente";
+
+
+service ClienteGrpcService {
+
+  rpc CrearCliente (CrearClienteRequest) returns (ClienteResponse);
+
+  rpc ModificarCliente (ModificarClienteRequest) returns (ClienteResponse);
+
+  rpc BajaLogicaCliente (ClienteIdRequest) returns (ClienteResponse);
+
+  rpc ObtenerClientes (ObtenerClientesRequest) returns (ClientesResponse);
+
+  rpc ObtenerClientePorId (ClienteIdRequest) returns (ClienteResponse);
+
+  rpc ExisteCliente (ClienteIdRequest) returns (ExisteResponse);
+
+  rpc ClienteActivo (ClienteIdRequest) returns (ActivoResponse);
+}
+
+message CrearClienteRequest {
+  string documento = 1;
+  string nombre = 2;
+  string apellido = 3;
+  string email = 4;
+  string telefono = 5;
+  string fechaNacimiento = 6; // formato: "1998-04-20"
+}
+
+message ModificarClienteRequest {
+  int64 id = 1;
+  string nombre = 2;
+  string apellido = 3;
+  string telefono = 4;
+  string fechaNacimiento = 5;
+}
+
+message ObtenerClientesRequest {
+  // Sin filtros por ahora.
+}
+
+message ClienteIdRequest {
+  int64 id = 1;
+}
+
+message ClienteResponse {
+  int64 id = 1;
+  string nombre = 2;
+  string apellido = 3;
+  string dni = 4;
+  string email = 5;
+  bool activo = 6;
+}
+
+message ClientesResponse {
+  repeated ClienteResponse clientes = 1;
+}
+
+message ExisteResponse {
+  bool existe = 1;
+}
+
+message ActivoResponse {
+  bool activo = 1;
+}
