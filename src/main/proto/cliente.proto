@@ -8,6 +8,15 @@ option java_package = "com.unla.tp_distribuidos.grpc.cliente";
 
 service ClienteGrpcService {
 
+  // Alta de cliente.
+  rpc CrearCliente (CrearClienteRequest) returns (ClienteResponse);
+
+  // Modificación de datos de un cliente existente.
+  rpc ModificarCliente (ModificarClienteRequest) returns (ClienteResponse);
+
+  // Baja lógica de un cliente.
+  rpc BajaLogicaCliente (ClienteIdRequest) returns (ClienteResponse);
+
   // Consultar clientes (listado completo).
   rpc ObtenerClientes (ObtenerClientesRequest) returns (ClientesResponse);
 
@@ -19,6 +28,23 @@ service ClienteGrpcService {
 
   // Verificar que un cliente se encuentre activo.
   rpc ClienteActivo (ClienteIdRequest) returns (ActivoResponse);
+}
+
+message CrearClienteRequest {
+  string documento = 1;
+  string nombre = 2;
+  string apellido = 3;
+  string email = 4;
+  string telefono = 5;
+  string fechaNacimiento = 6; // formato: "1998-04-20"
+}
+
+message ModificarClienteRequest {
+  int64 id = 1;
+  string nombre = 2;
+  string apellido = 3;
+  string telefono = 4;
+  string fechaNacimiento = 5;
 }
 
 message ObtenerClientesRequest {
