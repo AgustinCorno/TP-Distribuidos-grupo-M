@@ -73,6 +73,60 @@ def listar_clientes():
     except grpc.RpcError as e:
         grpc_error_to_http(e)
 
+
+@app.get("/api/v1/clientes/{id}/existe")
+def verificar_existencia_cliente(id: int):
+    try:
+        cliente_client.obtener_por_id(id)
+        return {"resultado": True}
+    except grpc.RpcError as e:
+        if e.code() == grpc.StatusCode.NOT_FOUND:
+            return {"resultado": False}
+        grpc_error_to_http(e)
+
+
+@app.get("/api/v1/clientes/{id}/activo")
+def verificar_cliente_activo(id: int):
+    try:
+        activo = cliente_client.cliente_activo(id)
+        return {"activo": bool(activo)}
+    except grpc.RpcError as e:
+        grpc_error_to_http(e)
+
+
+@app.post("/api/v1/clientes/validar")
+def validar_cliente(dto: dict):
+    cliente_id = dto.get("clienteId")
+
+    if not isinstance(cliente_id, int) or isinstance(cliente_id, bool) or cliente_id <= 0:
+        raise HTTPException(
+            status_code=400,
+            detail="El ID del cliente debe ser un entero positivo"
+        )
+
+    try:
+        cliente = cliente_client.obtener_por_id(cliente_id)
+        activo = cliente_client.cliente_activo(cliente_id)
+
+        if not activo:
+            return {
+                "valido": False,
+                "mensaje": "El cliente existe, pero no está activo."
+            }
+
+        return {
+            "valido": True,
+            "mensaje": "El cliente existe y está activo."
+        }
+
+    except grpc.RpcError as e:
+        if e.code() == grpc.StatusCode.NOT_FOUND:
+            return {
+                "valido": False,
+                "mensaje": "El cliente no existe."
+            }
+        grpc_error_to_http(e)
+
 @app.post("/api/v1/vehiculos", response_model=VehiculoOut, status_code=201)
 def crear_vehiculo(dto: VehiculoCreate):
     try:

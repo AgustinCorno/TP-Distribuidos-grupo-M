@@ -626,6 +626,284 @@
             alert('Error al crear cliente: ' + await resp.text());
         }
     }
+	
+	const CLIENTES_API = '/api/v1/clientes';
+
+	async function peticionClientes(ruta, opciones = {}) {
+	    const respuesta = await fetch(CLIENTES_API + ruta, {
+	        ...opciones,
+	        headers: {
+	            'Content-Type': 'application/json',
+	            ...(opciones.headers || {})
+	        }
+	    });
+
+	    const texto = await respuesta.text();
+	    let datos = null;
+
+	    if (texto) {
+	        try {
+	            datos = JSON.parse(texto);
+	        } catch {
+	            datos = texto;
+	        }
+	    }
+
+	    if (!respuesta.ok) {
+	        const mensaje = typeof datos === 'string'
+	            ? datos
+	            : datos?.message || datos?.mensaje || respuesta.statusText;
+
+	        throw new Error(mensaje || `Error HTTP ${respuesta.status}`);
+	    }
+
+	    return datos;
+	}
+
+	function mostrarResultadoClientes(mensaje, tipo = 'info') {
+	    const salida = document.getElementById('grpc-cliente-resultado');
+	    salida.replaceChildren();
+
+	    const alerta = document.createElement('div');
+	    alerta.className = `alert alert-${tipo}`;
+	    alerta.textContent = mensaje;
+	    salida.appendChild(alerta);
+	}
+
+	function mostrarDetalleCliente(cliente) {
+	    const contenedor = document.getElementById('grpc-cliente-detalle');
+	    contenedor.replaceChildren();
+
+	    const tarjeta = document.createElement('div');
+	    tarjeta.className = 'border rounded p-3';
+
+	    const titulo = document.createElement('h5');
+	    titulo.textContent =
+	        `${cliente.nombre ?? ''} ${cliente.apellido ?? ''}`.trim() ||
+	        `Cliente #${cliente.id}`;
+
+	    const datos = document.createElement('p');
+	    datos.className = 'mb-1';
+	    datos.textContent =
+	        `ID: ${cliente.id} | Documento: ${cliente.documento ?? '-'}`;
+
+	    const email = document.createElement('p');
+	    email.className = 'mb-1';
+	    email.textContent = `Email: ${cliente.email ?? '-'}`;
+
+	    const estado = document.createElement('span');
+	    estado.className = cliente.activo
+	        ? 'badge bg-success'
+	        : 'badge bg-secondary';
+	    estado.textContent = cliente.activo ? 'Activo' : 'Inactivo';
+
+	    tarjeta.append(titulo, datos, email, estado);
+	    contenedor.appendChild(tarjeta);
+	}
+
+	async function listarClientes() {
+	    const tbody = document.getElementById('tabla-clientes-grpc');
+	    tbody.replaceChildren();
+
+	    const filaCarga = document.createElement('tr');
+	    const celdaCarga = document.createElement('td');
+	    celdaCarga.colSpan = 7;
+	    celdaCarga.className = 'text-center text-muted';
+	    celdaCarga.textContent = 'Consultando clientes...';
+	    filaCarga.appendChild(celdaCarga);
+	    tbody.appendChild(filaCarga);
+
+	    try {
+	        const datos = await peticionClientes('');
+
+	        // El Gateway puede devolver un array o un objeto con "clientes".
+	        const clientes = Array.isArray(datos)
+	            ? datos
+	            : datos?.clientes;
+
+	        if (!Array.isArray(clientes)) {
+	            throw new Error(
+	                'La respuesta no contiene una lista de clientes.'
+	            );
+	        }
+
+	        document.getElementById('clientes-total').textContent =
+	            clientes.length;
+
+	        tbody.replaceChildren();
+
+	        if (clientes.length === 0) {
+	            tbody.innerHTML =
+	                '<tr><td colspan="7" class="text-center">' +
+	                'No hay clientes registrados.</td></tr>';
+	            return;
+	        }
+
+	        clientes.forEach(cliente => {
+	            const fila = document.createElement('tr');
+
+	            const valores = [
+	                cliente.id,
+	                cliente.documento,
+	                cliente.nombre,
+	                cliente.apellido,
+	                cliente.email
+	            ];
+
+	            valores.forEach(valor => {
+	                const celda = document.createElement('td');
+	                celda.textContent = valor ?? '-';
+	                fila.appendChild(celda);
+	            });
+
+	            const celdaEstado = document.createElement('td');
+	            const badge = document.createElement('span');
+	            badge.className = cliente.activo
+	                ? 'badge bg-success'
+	                : 'badge bg-secondary';
+	            badge.textContent = cliente.activo ? 'Activo' : 'Inactivo';
+	            celdaEstado.appendChild(badge);
+	            fila.appendChild(celdaEstado);
+
+	            const celdaAccion = document.createElement('td');
+	            const boton = document.createElement('button');
+	            boton.type = 'button';
+	            boton.className = 'btn btn-sm btn-outline-primary';
+	            boton.textContent = 'Ver detalle';
+	            boton.addEventListener('click', () => {
+	                document.getElementById('grpc-cliente-id').value =
+	                    cliente.id;
+	                document.getElementById('grpc-validacion-id').value =
+	                    cliente.id;
+	                consultarCliente();
+	            });
+	            celdaAccion.appendChild(boton);
+	            fila.appendChild(celdaAccion);
+
+	            tbody.appendChild(fila);
+	        });
+	    } catch (error) {
+	        document.getElementById('clientes-total').textContent = '—';
+	        tbody.replaceChildren();
+
+	        const fila = document.createElement('tr');
+	        const celda = document.createElement('td');
+	        celda.colSpan = 7;
+	        celda.className = 'text-danger';
+	        celda.textContent = `Error al consultar clientes: ${error.message}`;
+	        fila.appendChild(celda);
+	        tbody.appendChild(fila);
+	    }
+	}
+
+	async function consultarCliente() {
+	    const id = document.getElementById('grpc-cliente-id').value.trim();
+
+	    if (!id || !Number.isInteger(Number(id)) || Number(id) <= 0) {
+	        mostrarResultadoClientes(
+	            'Ingresá un ID de cliente válido.',
+	            'warning'
+	        );
+	        return;
+	    }
+
+	    try {
+	        const cliente = await peticionClientes(
+	            `/${encodeURIComponent(id)}`
+	        );
+
+	        if (!cliente || cliente.id == null) {
+	            throw new Error('No se encontró el cliente solicitado.');
+	        }
+
+	        mostrarDetalleCliente(cliente);
+	        document.getElementById('grpc-validacion-id').value = id;
+	        mostrarResultadoClientes('Cliente consultado correctamente.', 'success');
+	    } catch (error) {
+	        document.getElementById('grpc-cliente-detalle').textContent =
+	            'No se pudo consultar el cliente.';
+
+	        mostrarResultadoClientes(error.message, 'danger');
+	    }
+	}
+
+	async function verificarCliente(tipo) {
+	    const id = document.getElementById('grpc-validacion-id').value.trim();
+
+	    if (!id || !Number.isInteger(Number(id)) || Number(id) <= 0) {
+	        mostrarResultadoClientes(
+	            'Ingresá un ID de cliente válido.',
+	            'warning'
+	        );
+	        return;
+	    }
+
+	    try {
+	        const resultado = await peticionClientes(
+	            `/${encodeURIComponent(id)}/${tipo}`
+	        );
+
+	        const valor = typeof resultado === 'boolean'
+	            ? resultado
+	            : resultado?.resultado ?? resultado?.existe ?? resultado?.activo;
+
+	        if (typeof valor !== 'boolean') {
+	            throw new Error(
+	                'El Gateway debe devolver un booleano o un objeto con el resultado.'
+	            );
+	        }
+
+	        const mensaje = tipo === 'existe'
+	            ? (valor ? 'El cliente existe.' : 'El cliente no existe.')
+	            : (valor ? 'El cliente está activo.' : 'El cliente no está activo.');
+
+	        mostrarResultadoClientes(
+	            mensaje,
+	            valor ? 'success' : 'warning'
+	        );
+	    } catch (error) {
+	        mostrarResultadoClientes(
+	            `No se pudo verificar el cliente: ${error.message}`,
+	            'danger'
+	        );
+	    }
+	}
+
+	async function validarCliente() {
+	    const id = document.getElementById('grpc-validacion-id').value.trim();
+
+	    if (!id || !Number.isInteger(Number(id)) || Number(id) <= 0) {
+	        mostrarResultadoClientes(
+	            'Ingresá un ID de cliente válido.',
+	            'warning'
+	        );
+	        return;
+	    }
+
+	    try {
+	        const resultado = await peticionClientes('/validar', {
+	            method: 'POST',
+	            body: JSON.stringify({ clienteId: Number(id) })
+	        });
+
+	        //const valido = resultado?.valido ?? resultado?.valido === true;
+	        			const valido = resultado?.valido === true;
+			const mensaje = resultado?.mensaje ??
+	            (valido ? 'El cliente pasó las validaciones.'
+	                    : 'El cliente no pasó las validaciones.');
+
+	        mostrarResultadoClientes(
+	            mensaje,
+	            valido ? 'success' : 'warning'
+	        );
+	    } catch (error) {
+	        mostrarResultadoClientes(
+	            `Error de validación: ${error.message}`,
+	            'danger'
+	        );
+	    }
+	}
+
 </script>
 
 </body>
